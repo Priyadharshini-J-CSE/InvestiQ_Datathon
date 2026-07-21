@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    background-color: #0B0B0B;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0B0B0B; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #FF2D2D; }
+}
+
+@layer components {
+  .glass {
+    background: rgba(24, 24, 24, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .btn-primary {
+    @apply bg-primary hover:bg-accent text-white font-semibold px-6 py-2.5 rounded-lg transition-all duration-200 shadow-glow hover:shadow-glow;
+  }
+  .btn-ghost {
+    @apply border border-white/20 hover:border-primary text-white font-semibold px-6 py-2.5 rounded-lg transition-all duration-200;
+  }
+  .card {
+    @apply bg-card rounded-xl border border-white/5 p-5;
+  }
+  .stat-card {
+    @apply card hover:border-primary/30 transition-all duration-300 cursor-pointer;
+  }
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 cursor-pointer text-sm font-medium;
+  }
+  .sidebar-item.active {
+    @apply text-white bg-primary/10 border border-primary/20 text-primary;
+  }
+  .input-field {
+    @apply bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-primary/50 transition-all duration-200 w-full;
+  }
+  .badge {
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+  .badge-red { @apply badge bg-primary/20 text-primary; }
+  .badge-green { @apply badge bg-green/20 text-green; }
+  .badge-yellow { @apply badge bg-yellow-500/20 text-yellow-400; }
+  .badge-blue { @apply badge bg-blue-500/20 text-blue-400; }
+  .badge-gray { @apply badge bg-white/10 text-gray-400; }
+}

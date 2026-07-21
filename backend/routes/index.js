@@ -1,0 +1,27 @@
+const express = require('express')
+const router = express.Router()
+const auth = require('../middleware/auth')
+const { login } = require('../controllers/authController')
+const { getStats, getAnalytics } = require('../controllers/dashboardController')
+const { getAll: getFIRs, getById: getFIRById } = require('../controllers/firController')
+const { getAll: getCriminals, getById: getCriminalById } = require('../controllers/criminalController')
+const { search } = require('../controllers/searchController')
+const { ask } = require('../controllers/assistantController')
+const upload = require('../middleware/upload')
+
+router.post('/login', login)
+router.get('/dashboard', auth, getStats)
+router.get('/analytics', auth, getAnalytics)
+router.get('/fir', auth, getFIRs)
+router.get('/fir/:id', auth, getFIRById)
+router.get('/criminals', auth, getCriminals)
+router.get('/criminals/:id', auth, getCriminalById)
+router.post('/search', auth, search)
+router.post('/assistant', auth, ask)
+router.post('/upload', auth, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  res.json({ success: true, filename: req.file.filename, path: req.file.path })
+})
+router.get('/reports', auth, (req, res) => res.json({ success: true, data: [] }))
+
+module.exports = router

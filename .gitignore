@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# AI model cache & vector DB
+ai/vector_db/faiss.index
+ai/vector_db/metadata.pkl
+ai/models/
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python venv
+venv/
+.venv/
+env/
