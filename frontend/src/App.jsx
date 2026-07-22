@@ -11,6 +11,7 @@ import Analytics from './pages/Analytics'
 import Features from './pages/Features'
 import CriminalProfile from './pages/CriminalProfile'
 import Login from './pages/Login'
+import Register from './pages/Register'
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
@@ -34,10 +35,11 @@ function ProtectedRoute({ children }) {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+            <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
 
             {/* Public pages with Navbar + Footer */}
             <Route element={<MainLayout />}>

@@ -83,14 +83,14 @@ export default function Overview() {
                 Show me all theft cases in Bengaluru Urban this month
               </div>
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-sm text-gray-300">
-                <div className="text-primary font-medium mb-1">InvertiQ AI</div>
+                <div className="text-primary font-medium mb-1">InvestiQ AI</div>
                 Found 234 theft cases in Bengaluru Urban (Nov 2024). Top hotspots: Koramangala (42), Whitefield (38), Indiranagar (31). Confidence: 96.2%
               </div>
               <div className="bg-white/5 rounded-lg p-3 text-sm text-gray-300">
                 Identify repeat offenders in these cases
               </div>
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-sm text-gray-300">
-                <div className="text-primary font-medium mb-1">InvertiQ AI</div>
+                <div className="text-primary font-medium mb-1">InvestiQ AI</div>
                 Detected 12 repeat offenders. Ravi Kumar (CRM-0023) appears in 8 cases. Network analysis suggests organized gang activity.
               </div>
             </div>

@@ -15,6 +15,16 @@ ai/vector_db/faiss.index
 ai/vector_db/metadata.pkl
 ai/models/
 
+# Model train artifacts (large binary files)
+model/train/*.pkl
+model/train/*.npy
+model/train/*.index
+model/__pycache__/
+model/notebook/.ipynb_checkpoints/
+
+# Startup log
+model/api_startup.log
+
 # Uploads
 backend/uploads/*
 !backend/uploads/.gitkeep

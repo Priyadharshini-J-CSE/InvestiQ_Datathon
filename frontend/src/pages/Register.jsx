@@ -1,45 +1,39 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate, Link } from 'react-router-dom'
-import { Zap, Shield, Eye, EyeOff, Lock, User } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
+import { Zap, Shield, Eye, EyeOff, Lock, User, BadgeCheck } from 'lucide-react'
 
-const demoUsers = [
-  { role: 'Admin', name: 'SP Rajesh Kumar', username: 'admin', password: 'admin123' },
-  { role: 'Officer', name: 'SI Suresh Gowda', username: 'officer', password: 'officer123' },
-  { role: 'Investigator', name: 'PI Mahesh Nair', username: 'investigator', password: 'inv123' },
-]
+const roles = ['Admin', 'Officer', 'Investigator']
 
-export default function Login() {
-  const [form, setForm] = useState({ username: '', password: '' })
+export default function Register() {
+  const [form, setForm] = useState({ username: '', password: '', name: '', role: 'Officer', badge: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { login } = useAuth()
+  const [success, setSuccess] = useState('')
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Login failed')
-      login(data.user, data.token)
-      navigate('/dashboard')
+      if (!res.ok) throw new Error(data.error || 'Registration failed')
+      setSuccess('Account created! Redirecting to login...')
+      setTimeout(() => navigate('/login'), 1500)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
   }
-
-  const quickLogin = (u) => setForm({ username: u.username, password: u.password })
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
@@ -54,31 +48,58 @@ export default function Login() {
             <Zap size={28} className="text-white" />
           </div>
           <h1 className="text-3xl font-black text-white">Investi<span className="text-primary">Q</span></h1>
-          <p className="text-gray-500 text-sm mt-1">Karnataka State Police – Secure Access</p>
+          <p className="text-gray-500 text-sm mt-1">Create Officer Account</p>
         </div>
 
         <div className="card border border-white/5">
           <div className="flex items-center gap-2 mb-6">
             <Shield size={16} className="text-primary" />
-            <span className="text-sm font-medium text-gray-400">Authorized Personnel Only</span>
+            <span className="text-sm font-medium text-gray-400">New Officer Registration</span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs text-gray-500 mb-1.5 block">Username / Badge ID</label>
+              <label className="text-xs text-gray-500 mb-1.5 block">Full Name</label>
+              <div className="relative">
+                <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                  placeholder="e.g. SI Ramesh Kumar" className="input-field pl-10" required />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1.5 block">Username</label>
               <div className="relative">
                 <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input value={form.username} onChange={e => setForm(p => ({ ...p, username: e.target.value }))}
-                  placeholder="Enter username" className="input-field pl-10" required />
+                  placeholder="Choose a username" className="input-field pl-10" required />
               </div>
             </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1.5 block">Badge ID</label>
+              <div className="relative">
+                <BadgeCheck size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                <input value={form.badge} onChange={e => setForm(p => ({ ...p, badge: e.target.value }))}
+                  placeholder="e.g. KSP-201" className="input-field pl-10" />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1.5 block">Role</label>
+              <select value={form.role} onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
+                className="input-field">
+                {roles.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+
             <div>
               <label className="text-xs text-gray-500 mb-1.5 block">Password</label>
               <div className="relative">
                 <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input type={showPass ? 'text' : 'password'} value={form.password}
                   onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                  placeholder="Enter password" className="input-field pl-10 pr-10" required />
+                  placeholder="Create a password" className="input-field pl-10 pr-10" required />
                 <button type="button" onClick={() => setShowPass(!showPass)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
                   {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -87,30 +108,18 @@ export default function Login() {
             </div>
 
             {error && <p className="text-xs text-primary bg-primary/10 border border-primary/20 rounded-lg px-3 py-2">{error}</p>}
+            {success && <p className="text-xs text-green-400 bg-green-400/10 border border-green-400/20 rounded-lg px-3 py-2">{success}</p>}
 
             <button type="submit" disabled={loading}
               className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-60">
               {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-              {loading ? 'Authenticating...' : 'Sign In'}
+              {loading ? 'Creating Account...' : 'Register'}
             </button>
           </form>
 
           <div className="mt-4 text-center">
-            <span className="text-xs text-gray-600">New officer? </span>
-            <Link to="/register" className="text-xs text-primary hover:underline">Register here</Link>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-white/5">
-            <p className="text-xs text-gray-600 mb-3">Quick Demo Access:</p>
-            <div className="grid grid-cols-3 gap-2">
-              {demoUsers.map(u => (
-                <button key={u.role} onClick={() => quickLogin(u)}
-                  className="text-xs bg-white/5 hover:bg-primary/10 border border-white/10 hover:border-primary/30 text-gray-400 hover:text-primary px-2 py-2 rounded-lg transition-all text-center">
-                  <div className="font-medium">{u.role}</div>
-                  <div className="text-gray-600">{u.username}</div>
-                </button>
-              ))}
-            </div>
+            <span className="text-xs text-gray-600">Already have an account? </span>
+            <Link to="/login" className="text-xs text-primary hover:underline">Sign in</Link>
           </div>
         </div>
       </motion.div>

@@ -23,7 +23,7 @@ export default function Assistant() {
               <Bot size={16} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">InvertiQ AI</h3>
+              <h3 className="text-sm font-semibold text-white">InvestiQ AI</h3>
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 bg-green rounded-full animate-pulse" />
                 <span className="text-xs text-green">Online</span>
@@ -69,11 +69,11 @@ export default function Assistant() {
             <Bot size={16} className="text-primary" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-white">AI Investigation Assistant</h2>
+            <h2 className="text-sm font-semibold text-white">InvestiQ AI Assistant</h2>
             <p className="text-xs text-gray-500">Natural language crime intelligence queries</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-gray-600">Model: InvertiQ-RAG-v2</span>
+            <span className="text-xs text-gray-600">Model: InvestiQ-RAG-v2</span>
             <div className="w-2 h-2 bg-green rounded-full animate-pulse" />
           </div>
         </div>

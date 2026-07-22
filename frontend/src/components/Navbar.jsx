@@ -30,7 +30,7 @@ export default function Navbar() {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-glow">
             <Zap size={18} className="text-white" />
           </div>
-          <span className="text-xl font-bold text-white">Inverti<span className="text-primary">Q</span></span>
+          <span className="text-xl font-bold text-white">Investi<span className="text-primary">Q</span></span>
         </Link>
 
         {/* Desktop Nav */}

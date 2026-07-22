@@ -1,4 +1,4 @@
-// Mock data for InvertiQ platform
+// Mock data for InvestiQ platform
 
 export const stats = {
   totalFIRs: 12847,
@@ -117,7 +117,7 @@ export const aiChatHistory = [
   {
     id: 1,
     role: 'assistant',
-    content: 'Hello! I\'m InvertiQ AI, your crime intelligence assistant. I can help you analyze FIRs, find criminal patterns, search case histories, and generate investigation insights. How can I assist you today?',
+    content: 'Hello! I\'m InvestiQ AI, your crime intelligence assistant. I can help you analyze FIRs, find criminal patterns, search case histories, and generate investigation insights. How can I assist you today?',
     timestamp: new Date().toISOString(),
   }
 ]

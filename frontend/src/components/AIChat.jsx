@@ -1,22 +1,20 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Mic, Bot, User, Loader2, Zap, Copy, ThumbsUp } from 'lucide-react'
+import { Send, Mic, Bot, User, Loader2, Zap } from 'lucide-react'
 import { suggestedPrompts } from '../utils/mockData'
-
-const mockResponses = {
-  default: (q) => `Based on my analysis of the Karnataka Police database, here's what I found regarding "${q}":\n\n**Key Findings:**\n• 23 similar cases identified in the last 6 months\n• Primary hotspot: Bengaluru Urban district (42% of cases)\n• Most common IPC sections: 379, 420, 302\n\n**Pattern Analysis:**\nAI confidence score: 94.2%. The pattern suggests organized criminal activity with repeat offenders operating across 3 districts.\n\n**Recommended Actions:**\n1. Cross-reference with FIR-2024-01045 and FIR-2024-00892\n2. Issue lookout notice for suspect profile matching\n3. Coordinate with Mysuru district police\n\n*Sources: 12 FIRs, 3 chargesheets, 2 court judgements*`,
-}
+import { assistantService } from '../services/api'
 
 export default function AIChat({ compact = false }) {
   const [messages, setMessages] = useState([
     {
       id: 1, role: 'assistant',
-      content: "Hello! I'm **InvertiQ AI**, your crime intelligence assistant. I can analyze FIRs, detect patterns, search case histories, and generate investigation insights.\n\nHow can I assist you today?",
+      content: "Hello! I'm **InvestiQ AI**, your crime intelligence assistant. I can analyze FIRs, detect patterns, search case histories, and generate investigation insights.\n\nHow can I assist you today?",
       timestamp: new Date()
     }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const bottomRef = useRef(null)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
@@ -25,17 +23,34 @@ export default function AIChat({ compact = false }) {
     const msg = text || input.trim()
     if (!msg) return
     setInput('')
-    setMessages(prev => [...prev, { id: Date.now(), role: 'user', content: msg, timestamp: new Date() }])
+    setError(null)
+    const userMsg = { id: Date.now(), role: 'user', content: msg, timestamp: new Date() }
+    setMessages(prev => [...prev, userMsg])
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1500))
-    setMessages(prev => [...prev, {
-      id: Date.now() + 1, role: 'assistant',
-      content: mockResponses.default(msg),
-      timestamp: new Date(),
-      confidence: 94.2,
-      sources: ['FIR-2024-01045', 'Chargesheet-892', 'Judgement-2023-CR-445']
-    }])
-    setLoading(false)
+
+    const history = messages.map(m => ({ role: m.role, content: m.content }))
+
+    try {
+      const res = await assistantService.ask(msg, history)
+      const data = res.data
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1, role: 'assistant',
+        content: data.response,
+        timestamp: new Date(),
+        confidence: data.confidence,
+        sources: data.sources || []
+      }])
+    } catch (err) {
+      const errMsg = err.response?.data?.error || 'AI service unavailable. Please ensure the Python API is running on port 5001.'
+      setError(errMsg)
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1, role: 'assistant',
+        content: `⚠️ ${errMsg}`,
+        timestamp: new Date()
+      }])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const formatContent = (text) => {

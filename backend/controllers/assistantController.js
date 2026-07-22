@@ -1,27 +1,49 @@
 const axios = require('axios')
 
-const mockResponses = [
-  'Based on analysis of 12,847 FIRs, I found 23 similar cases. Primary hotspot: Bengaluru Urban (42%). Confidence: 94.2%.',
-  'Pattern detected: Organized theft ring operating across 3 districts. 8 repeat offenders identified. Recommend coordinated operation.',
-  'IPC Section 379 (Theft) is most invoked – 28% of all cases. Peak crime hours: 10PM-2AM. Hotspot: Koramangala.',
-  'Criminal network analysis complete. 5 connected individuals identified. Central node: CRM-0023 (Ravi Kumar). Risk score: 89.',
-]
+const AI_API_URL = process.env.AI_API_URL || 'http://localhost:5001'
 
 exports.ask = async (req, res) => {
   const { message, history = [] } = req.body
-  if (!message) return res.status(400).json({ error: 'Message required' })
+  if (!message) return res.status(400).json({ success: false, error: 'Message required' })
 
   try {
-    const aiRes = await axios.post(`${process.env.AI_API_URL}/ask`, { query: message, history }, { timeout: 15000 })
-    return res.json({ success: true, response: aiRes.data.response, confidence: aiRes.data.confidence, sources: aiRes.data.sources })
-  } catch {
-    const response = mockResponses[Math.floor(Math.random() * mockResponses.length)]
-    res.json({
+    const aiRes = await axios.post(
+      `${AI_API_URL}/ask`,
+      { query: message, history },
+      { timeout: 45000 }
+    )
+
+    const data = aiRes.data
+    return res.json({
       success: true,
-      response,
-      confidence: (Math.random() * 10 + 88).toFixed(1),
-      sources: ['FIR-2024-01045', 'Chargesheet-892'],
-      source: 'mock'
+      response: data.response,
+      confidence: data.confidence,
+      sources: data.sources || []
     })
+
+  } catch (err) {
+    // Log the full error so it's never hidden
+    console.error('[assistantController] AI API call failed:')
+    console.error('  Status :', err.response?.status)
+    console.error('  Data   :', JSON.stringify(err.response?.data))
+    console.error('  Message:', err.message)
+
+    // Extract the real error message from Python API if available
+    const pythonError = err.response?.data?.error || err.response?.data?.message || null
+    const isConnectionRefused = err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET'
+
+    let userMessage
+    if (isConnectionRefused) {
+      userMessage = 'Python AI service is not running. Start it with: cd model && python api.py'
+    } else if (pythonError) {
+      userMessage = pythonError
+    } else if (err.code === 'ECONNABORTED') {
+      userMessage = 'AI service timed out. The query may be too complex — try again.'
+    } else {
+      userMessage = `AI service error: ${err.message}`
+    }
+
+    const statusCode = isConnectionRefused ? 503 : (err.response?.status || 500)
+    return res.status(statusCode).json({ success: false, error: userMessage })
   }
 }
