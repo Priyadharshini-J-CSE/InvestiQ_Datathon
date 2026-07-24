@@ -238,8 +238,22 @@ async function createExtendedSchema() {
       )
     `)
 
+    // Indexes for performance
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_complainants_fir ON complainants(fir_id)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_victims_fir ON victims(fir_id)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_accused_fir ON accused(fir_id)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_accused_status ON accused(status)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_chargesheet_fir ON chargesheet(fir_id)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_chargesheet_status ON chargesheet(status)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_section_master_act ON section_master(act_id)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_crime_subhead_head ON crime_subhead(crime_head_id)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_act_section_map_fir ON act_section_mapping(fir_id)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_police_units_type ON police_units(type)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_courts_type ON courts(court_type)`)
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_district_master_state ON district_master(state_id)`)
+
     await client.query('COMMIT')
-    console.log('[ExtendedSchema] All 19 new tables created successfully')
+    console.log('[ExtendedSchema] All 19 new tables + indexes created successfully')
 
     // Seed master data
     await seedMasterData()

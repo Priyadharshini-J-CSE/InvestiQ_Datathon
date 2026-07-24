@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FileText, Users, HeartPulse, UserX, Scale, Camera,
-  UserCheck, FileCheck, ChevronDown, ChevronUp, ArrowLeft, Loader2
+  UserCheck, FileCheck, ChevronDown, ChevronUp, ArrowLeft, Loader2, Landmark
 } from 'lucide-react'
 import { firDetailService } from '../services/api'
 import { useToast } from '../components/Toast'
@@ -82,7 +82,7 @@ export default function FIRDetails() {
     <div className="text-center py-16 text-gray-500">FIR not found</div>
   )
 
-  const { fir, complainants, victims, accused, charges, evidence, arrests, chargesheets } = detail
+  const { fir, complainants, victims, accused, charges, evidence, arrests, chargesheets, courts = [] } = detail
 
   return (
     <div className="space-y-5">
@@ -260,6 +260,24 @@ export default function FIRDetails() {
                   ['Date', cs.chargesheet_date?.split('T')[0]],
                   ['Filed By', cs.filed_by],
                   ['Created By', cs.created_by_name],
+                ]} />
+              </div>
+            ))}
+          </div>
+        )}
+      </Section>
+
+      {/* Courts */}
+      <Section icon={Landmark} title="Courts" count={courts.length} color="text-teal-400">
+        {courts.length === 0 ? <EmptyState text="No court records linked" /> : (
+          <div className="space-y-3">
+            {courts.map((c, i) => (
+              <div key={c.id} className="bg-white/3 rounded-lg p-4">
+                <div className="text-sm font-semibold text-white mb-3">#{i + 1} {c.court_name}</div>
+                <InfoGrid items={[
+                  ['Type', c.court_type],
+                  ['District', c.district],
+                  ['State', c.state],
                 ]} />
               </div>
             ))}

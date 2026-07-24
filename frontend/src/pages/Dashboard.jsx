@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   FileText, AlertCircle, Clock, CheckCircle, Users, Calendar, Camera, Scale,
-  TrendingUp, Activity, Loader2
+  TrendingUp, Activity, Loader2, HeartPulse, UserX, FileCheck, Building2, Landmark, List, BookOpen
 } from 'lucide-react'
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -44,6 +44,14 @@ export default function Dashboard() {
     { icon: Calendar, label: 'Total Arrests', value: s.totalArrests ?? 0, change: 'recorded', color: '#42A5F5' },
     { icon: Camera, label: 'Active Officers', value: s.activeOfficers ?? 0, change: 'on duty', color: '#AB47BC' },
     { icon: Scale, label: 'Police Stations', value: s.policeStations ?? 0, change: 'statewide', color: '#26A69A' },
+    { icon: HeartPulse, label: 'Total Victims', value: s.totalVictims ?? 0, change: 'recorded', color: '#EF5350' },
+    { icon: Users, label: 'Complainants', value: s.totalComplainants ?? 0, change: 'registered', color: '#42A5F5' },
+    { icon: UserX, label: 'Accused', value: s.totalAccused ?? 0, change: 'in records', color: '#FF7043' },
+    { icon: FileCheck, label: 'Chargesheets', value: s.totalChargesheets ?? 0, change: 'filed', color: '#26C6DA' },
+    { icon: Building2, label: 'Police Units', value: s.totalPoliceUnits ?? 0, change: 'units', color: '#7E57C2' },
+    { icon: Landmark, label: 'Courts', value: s.totalCourts ?? 0, change: 'registered', color: '#66BB6A' },
+    { icon: List, label: 'Crime Heads', value: s.totalCrimeHeads ?? 0, change: 'categories', color: '#FFA726' },
+    { icon: BookOpen, label: 'IPC Sections', value: s.totalSections ?? 0, change: 'sections', color: '#EC407A' },
   ]
 
   const monthlyChart = a.monthly?.length ? a.monthly.map(r => ({ month: r.month, cases: parseInt(r.firs) })) : monthlyData
@@ -65,7 +73,7 @@ export default function Dashboard() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map((s, i) => <StatCard key={s.label} {...s} delay={i * 0.05} />)}
+        {statCards.map((s, i) => <StatCard key={s.label} {...s} delay={i * 0.03} />)}
       </div>
 
       {/* Charts Row 1 */}

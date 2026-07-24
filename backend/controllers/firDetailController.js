@@ -55,6 +55,12 @@ exports.getFIRDetail = async (req, res) => {
 
     if (!fir.rowCount) return res.status(404).json({ error: 'FIR not found' })
 
+    // Resolve courts by district matching the FIR
+    const firDistrict = fir.rows[0].district
+    const courts = firDistrict
+      ? (await pool.query(`SELECT * FROM courts WHERE district ILIKE $1 ORDER BY court_name`, [firDistrict])).rows
+      : []
+
     res.json({
       success: true,
       data: {
@@ -66,6 +72,7 @@ exports.getFIRDetail = async (req, res) => {
         evidence: evidence.rows,
         arrests: arrests.rows,
         chargesheets: chargesheets.rows,
+        courts,
       }
     })
   } catch (err) {
