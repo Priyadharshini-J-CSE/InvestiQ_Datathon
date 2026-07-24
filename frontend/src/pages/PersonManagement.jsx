@@ -8,6 +8,22 @@ import { personService } from '../services/api'
 
 const EMPTY = { full_name: '', gender: '', dob: '', age: '', phone: '', email: '', occupation: '', nationality: 'Indian', address: '', aadhaar: '' }
 
+function F({ label, name, type = 'text', options, form, setForm }) {
+  return (
+    <div>
+      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+      {options ? (
+        <select value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm">
+          <option value="">Select</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : (
+        <input type={type} value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm" />
+      )}
+    </div>
+  )
+}
+
 export default function PersonManagement() {
   const toast = useToast()
   const [data, setData] = useState([])
@@ -77,20 +93,6 @@ export default function PersonManagement() {
     }
   ]
 
-  const F = ({ label, name, type = 'text', options }) => (
-    <div>
-      <label className="block text-xs text-gray-400 mb-1">{label}</label>
-      {options ? (
-        <select value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm">
-          <option value="">Select</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : (
-        <input type={type} value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm" />
-      )}
-    </div>
-  )
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -108,15 +110,15 @@ export default function PersonManagement() {
       <Modal open={modal.open} onClose={() => setModal(p => ({ ...p, open: false }))}
         title={modal.mode === 'add' ? 'Add Person' : 'Edit Person'} size="lg">
         <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2"><F label="Full Name *" name="full_name" /></div>
-          <F label="Gender" name="gender" options={['Male', 'Female', 'Other']} />
-          <F label="Date of Birth" name="dob" type="date" />
-          <F label="Age" name="age" type="number" />
-          <F label="Phone" name="phone" />
-          <F label="Email" name="email" type="email" />
-          <F label="Occupation" name="occupation" />
-          <F label="Nationality" name="nationality" />
-          <F label="Aadhaar Number" name="aadhaar" />
+          <div className="col-span-2"><F label="Full Name *" name="full_name" form={form} setForm={setForm} /></div>
+          <F label="Gender" name="gender" options={['Male', 'Female', 'Other']} form={form} setForm={setForm} />
+          <F label="Date of Birth" name="dob" type="date" form={form} setForm={setForm} />
+          <F label="Age" name="age" type="number" form={form} setForm={setForm} />
+          <F label="Phone" name="phone" form={form} setForm={setForm} />
+          <F label="Email" name="email" type="email" form={form} setForm={setForm} />
+          <F label="Occupation" name="occupation" form={form} setForm={setForm} />
+          <F label="Nationality" name="nationality" form={form} setForm={setForm} />
+          <F label="Aadhaar Number" name="aadhaar" form={form} setForm={setForm} />
           <div className="col-span-2">
             <label className="block text-xs text-gray-400 mb-1">Address</label>
             <textarea value={form.address || ''} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} rows={2} className="input-field text-sm resize-none" />

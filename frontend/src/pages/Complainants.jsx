@@ -9,6 +9,25 @@ import { complainantService, firService } from '../services/api'
 const GENDERS = ['Male', 'Female', 'Other']
 const EMPTY = { fir_id: '', full_name: '', age: '', gender: '', occupation: '', religion: '', caste: '', mobile: '', address: '' }
 
+function F({ label, name, type = 'text', options, form, setForm }) {
+  const sf = (v) => setForm(p => ({ ...p, [name]: v }))
+  return (
+    <div>
+      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+      {options ? (
+        <select value={form[name] || ''} onChange={e => sf(e.target.value)} className="input-field text-sm">
+          <option value="">Select {label}</option>
+          {options.map(o => <option key={o.v || o} value={o.v || o}>{o.l || o}</option>)}
+        </select>
+      ) : type === 'textarea' ? (
+        <textarea value={form[name] || ''} onChange={e => sf(e.target.value)} rows={2} className="input-field text-sm resize-none" />
+      ) : (
+        <input type={type} value={form[name] || ''} onChange={e => sf(e.target.value)} className="input-field text-sm" />
+      )}
+    </div>
+  )
+}
+
 export default function Complainants() {
   const toast = useToast()
   const [data, setData] = useState([])
@@ -82,23 +101,6 @@ export default function Complainants() {
     }
   ]
 
-  const sf = (n, v) => setForm(p => ({ ...p, [n]: v }))
-  const F = ({ label, name, type = 'text', options }) => (
-    <div>
-      <label className="block text-xs text-gray-400 mb-1">{label}</label>
-      {options ? (
-        <select value={form[name] || ''} onChange={e => sf(name, e.target.value)} className="input-field text-sm">
-          <option value="">Select {label}</option>
-          {options.map(o => <option key={o.v || o} value={o.v || o}>{o.l || o}</option>)}
-        </select>
-      ) : type === 'textarea' ? (
-        <textarea value={form[name] || ''} onChange={e => sf(name, e.target.value)} rows={2} className="input-field text-sm resize-none" />
-      ) : (
-        <input type={type} value={form[name] || ''} onChange={e => sf(name, e.target.value)} className="input-field text-sm" />
-      )}
-    </div>
-  )
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -130,14 +132,14 @@ export default function Complainants() {
               {firs.map(f => <option key={f.id} value={f.id}>{f.fir_number} — {f.crime_type || ''}</option>)}
             </select>
           </div>
-          <F label="Full Name *" name="full_name" />
-          <F label="Mobile" name="mobile" />
-          <F label="Age" name="age" type="number" />
-          <F label="Gender" name="gender" options={GENDERS} />
-          <F label="Occupation" name="occupation" />
-          <F label="Religion" name="religion" />
-          <F label="Caste" name="caste" />
-          <div className="col-span-2"><F label="Address" name="address" type="textarea" /></div>
+          <F label="Full Name *" name="full_name" form={form} setForm={setForm} />
+          <F label="Mobile" name="mobile" form={form} setForm={setForm} />
+          <F label="Age" name="age" type="number" form={form} setForm={setForm} />
+          <F label="Gender" name="gender" options={GENDERS} form={form} setForm={setForm} />
+          <F label="Occupation" name="occupation" form={form} setForm={setForm} />
+          <F label="Religion" name="religion" form={form} setForm={setForm} />
+          <F label="Caste" name="caste" form={form} setForm={setForm} />
+          <div className="col-span-2"><F label="Address" name="address" type="textarea" form={form} setForm={setForm} /></div>
         </div>
         <div className="flex justify-end gap-3 mt-5 pt-4 border-t border-white/5">
           <button onClick={() => setModal(p => ({ ...p, open: false }))} className="btn-ghost text-sm py-2 px-4">Cancel</button>

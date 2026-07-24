@@ -12,6 +12,22 @@ const STATUSES = ['Active', 'Arrested', 'Released', 'Absconding', 'Deceased']
 const CRIME_CATS = ['Theft', 'Assault', 'Fraud', 'Murder', 'Robbery', 'Cybercrime', 'Drug Trafficking', 'Kidnapping', 'Other']
 const EMPTY = { name: '', alias: '', gender: '', age: '', address: '', fingerprint_id: '', dna_id: '', risk_level: 'Low', gang: '', crime_category: '', repeat_offender: false, status: 'Active', notes: '' }
 
+function F({ label, name, type = 'text', options, form, setForm }) {
+  return (
+    <div>
+      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+      {options ? (
+        <select value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm">
+          <option value="">Select</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : (
+        <input type={type} value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm" />
+      )}
+    </div>
+  )
+}
+
 export default function CriminalRecords() {
   const toast = useToast()
   const [data, setData] = useState([])
@@ -83,20 +99,6 @@ export default function CriminalRecords() {
     }
   ]
 
-  const F = ({ label, name, type = 'text', options }) => (
-    <div>
-      <label className="block text-xs text-gray-400 mb-1">{label}</label>
-      {options ? (
-        <select value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm">
-          <option value="">Select</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : (
-        <input type={type} value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm" />
-      )}
-    </div>
-  )
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -127,16 +129,16 @@ export default function CriminalRecords() {
       <Modal open={modal.open} onClose={() => setModal(p => ({ ...p, open: false }))}
         title={modal.mode === 'add' ? 'Add Criminal Record' : 'Edit Criminal Record'} size="lg">
         <div className="grid grid-cols-2 gap-4">
-          <F label="Full Name *" name="name" />
-          <F label="Alias" name="alias" />
-          <F label="Gender" name="gender" options={['Male', 'Female', 'Other']} />
-          <F label="Age" name="age" type="number" />
-          <F label="Risk Level" name="risk_level" options={RISK_LEVELS} />
-          <F label="Status" name="status" options={STATUSES} />
-          <F label="Crime Category" name="crime_category" options={CRIME_CATS} />
-          <F label="Gang" name="gang" />
-          <F label="Fingerprint ID" name="fingerprint_id" />
-          <F label="DNA ID" name="dna_id" />
+          <F label="Full Name *" name="name" form={form} setForm={setForm} />
+          <F label="Alias" name="alias" form={form} setForm={setForm} />
+          <F label="Gender" name="gender" options={['Male', 'Female', 'Other']} form={form} setForm={setForm} />
+          <F label="Age" name="age" type="number" form={form} setForm={setForm} />
+          <F label="Risk Level" name="risk_level" options={RISK_LEVELS} form={form} setForm={setForm} />
+          <F label="Status" name="status" options={STATUSES} form={form} setForm={setForm} />
+          <F label="Crime Category" name="crime_category" options={CRIME_CATS} form={form} setForm={setForm} />
+          <F label="Gang" name="gang" form={form} setForm={setForm} />
+          <F label="Fingerprint ID" name="fingerprint_id" form={form} setForm={setForm} />
+          <F label="DNA ID" name="dna_id" form={form} setForm={setForm} />
           <div className="col-span-2">
             <label className="block text-xs text-gray-400 mb-1">Address</label>
             <textarea value={form.address || ''} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} rows={2} className="input-field text-sm resize-none" />

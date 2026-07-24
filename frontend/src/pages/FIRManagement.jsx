@@ -18,6 +18,25 @@ const CRIME_TYPES = ['Theft', 'Assault', 'Fraud', 'Murder', 'Robbery', 'Cybercri
 
 const EMPTY = { fir_number: '', district: '', date: '', crime_type: '', ipc_sections: '', complainant: '', victim: '', accused: '', description: '', status: 'Open', officer_id: '' }
 
+function F({ label, name, type = 'text', options, form, setForm }) {
+  const sf = (v) => setForm(p => ({ ...p, [name]: v }))
+  return (
+    <div>
+      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+      {options ? (
+        <select value={form[name] || ''} onChange={e => sf(e.target.value)} className="input-field text-sm">
+          <option value="">Select {label}</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : type === 'textarea' ? (
+        <textarea value={form[name] || ''} onChange={e => sf(e.target.value)} rows={3} className="input-field text-sm resize-none" />
+      ) : (
+        <input type={type} value={form[name] || ''} onChange={e => sf(e.target.value)} className="input-field text-sm" />
+      )}
+    </div>
+  )
+}
+
 export default function FIRManagement() {
   const toast = useToast()
   const navigate = useNavigate()
@@ -92,22 +111,6 @@ export default function FIRManagement() {
     }
   ]
 
-  const F = ({ label, name, type = 'text', options }) => (
-    <div>
-      <label className="block text-xs text-gray-400 mb-1">{label}</label>
-      {options ? (
-        <select value={form[name]} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm">
-          <option value="">Select {label}</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : type === 'textarea' ? (
-        <textarea value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} rows={3} className="input-field text-sm resize-none" />
-      ) : (
-        <input type={type} value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm" />
-      )}
-    </div>
-  )
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -134,16 +137,16 @@ export default function FIRManagement() {
       <Modal open={modal.open} onClose={() => setModal(p => ({ ...p, open: false }))}
         title={modal.mode === 'add' ? 'New FIR' : 'Edit FIR'} size="lg">
         <div className="grid grid-cols-2 gap-4">
-          <F label="FIR Number *" name="fir_number" />
-          <F label="Date *" name="date" type="date" />
-          <F label="Crime Type" name="crime_type" options={CRIME_TYPES} />
-          <F label="Status" name="status" options={STATUSES} />
-          <F label="District" name="district" />
-          <F label="IPC Sections" name="ipc_sections" />
-          <F label="Complainant" name="complainant" />
-          <F label="Victim" name="victim" />
-          <F label="Accused" name="accused" />
-          <div className="col-span-2"><F label="Description" name="description" type="textarea" /></div>
+          <F label="FIR Number *" name="fir_number" form={form} setForm={setForm} />
+          <F label="Date *" name="date" type="date" form={form} setForm={setForm} />
+          <F label="Crime Type" name="crime_type" options={CRIME_TYPES} form={form} setForm={setForm} />
+          <F label="Status" name="status" options={STATUSES} form={form} setForm={setForm} />
+          <F label="District" name="district" form={form} setForm={setForm} />
+          <F label="IPC Sections" name="ipc_sections" form={form} setForm={setForm} />
+          <F label="Complainant" name="complainant" form={form} setForm={setForm} />
+          <F label="Victim" name="victim" form={form} setForm={setForm} />
+          <F label="Accused" name="accused" form={form} setForm={setForm} />
+          <div className="col-span-2"><F label="Description" name="description" type="textarea" form={form} setForm={setForm} /></div>
         </div>
         <div className="flex justify-end gap-3 mt-5 pt-4 border-t border-white/5">
           <button onClick={() => setModal(p => ({ ...p, open: false }))} className="btn-ghost text-sm py-2 px-4">Cancel</button>

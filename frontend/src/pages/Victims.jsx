@@ -11,6 +11,22 @@ const VICTIM_TYPES = ['Primary', 'Secondary', 'Witness']
 const INJURY_TYPES = ['None', 'Minor', 'Grievous', 'Fatal']
 const EMPTY = { fir_id: '', victim_name: '', age: '', gender: '', victim_type: '', injury_type: 'None', hospital: '', remarks: '' }
 
+function F({ label, name, type = 'text', options, form, setForm }) {
+  return (
+    <div>
+      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+      {options ? (
+        <select value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm">
+          <option value="">Select</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : (
+        <input type={type} value={form[name] || ''} onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))} className="input-field text-sm" />
+      )}
+    </div>
+  )
+}
+
 export default function Victims() {
   const toast = useToast()
   const [data, setData] = useState([])
@@ -88,21 +104,6 @@ export default function Victims() {
     }
   ]
 
-  const sf = (n, v) => setForm(p => ({ ...p, [n]: v }))
-  const F = ({ label, name, type = 'text', options }) => (
-    <div>
-      <label className="block text-xs text-gray-400 mb-1">{label}</label>
-      {options ? (
-        <select value={form[name] || ''} onChange={e => sf(name, e.target.value)} className="input-field text-sm">
-          <option value="">Select</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : (
-        <input type={type} value={form[name] || ''} onChange={e => sf(name, e.target.value)} className="input-field text-sm" />
-      )}
-    </div>
-  )
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -140,12 +141,12 @@ export default function Victims() {
               {firs.map(f => <option key={f.id} value={f.id}>{f.fir_number} — {f.crime_type || ''}</option>)}
             </select>
           </div>
-          <F label="Victim Name *" name="victim_name" />
-          <F label="Age" name="age" type="number" />
-          <F label="Gender" name="gender" options={GENDERS} />
-          <F label="Victim Type" name="victim_type" options={VICTIM_TYPES} />
-          <F label="Injury Type" name="injury_type" options={INJURY_TYPES} />
-          <F label="Hospital" name="hospital" />
+          <F label="Victim Name *" name="victim_name" form={form} setForm={setForm} />
+          <F label="Age" name="age" type="number" form={form} setForm={setForm} />
+          <F label="Gender" name="gender" options={GENDERS} form={form} setForm={setForm} />
+          <F label="Victim Type" name="victim_type" options={VICTIM_TYPES} form={form} setForm={setForm} />
+          <F label="Injury Type" name="injury_type" options={INJURY_TYPES} form={form} setForm={setForm} />
+          <F label="Hospital" name="hospital" form={form} setForm={setForm} />
           <div className="col-span-2">
             <label className="block text-xs text-gray-400 mb-1">Remarks</label>
             <textarea value={form.remarks || ''} onChange={e => sf('remarks', e.target.value)} rows={2} className="input-field text-sm resize-none" />
