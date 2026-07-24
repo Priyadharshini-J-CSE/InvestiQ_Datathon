@@ -4,6 +4,7 @@ import sys
 import pickle
 import types
 import traceback
+from typing import Optional, Tuple
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
@@ -177,6 +178,43 @@ print(f"  Names: {KNOWN_NAMES_ORIGINAL}")
 print("=" * 60)
 
 
+# ── FIR / Case number helpers ────────────────────────────────────────────────
+
+_FIR_PATTERN = re.compile(r'\bTNFIR\d+\b', re.IGNORECASE)
+_CASE_PATTERN = re.compile(r'\bCASE\d+\b', re.IGNORECASE)
+
+
+def extract_ids_from_query(query: str) -> Tuple[list, list]:
+    """Return (fir_numbers, case_numbers) found in the query."""
+    firs = [m.upper() for m in _FIR_PATTERN.findall(query)]
+    cases = [m.upper() for m in _CASE_PATTERN.findall(query)]
+    return firs, cases
+
+
+def retrieve_by_id(fir_numbers: list, case_numbers: list) -> list:
+    """Return documents that match any of the given FIR or Case numbers."""
+    matched = []
+    for doc in documents:
+        content = doc['content']
+        meta = doc['metadata']
+        content_upper = content.upper()
+        fir_meta = str(meta.get('fir_number', '')).upper()
+        case_meta = str(meta.get('case_number', '')).upper()
+        hit = False
+        for fir in fir_numbers:
+            if fir in content_upper or fir == fir_meta:
+                hit = True
+                break
+        if not hit:
+            for case in case_numbers:
+                if case in content_upper or case == case_meta:
+                    hit = True
+                    break
+        if hit:
+            matched.append({'content': content, 'metadata': meta, 'score': 0.0})
+    return matched
+
+
 # ── Name validation helpers ───────────────────────────────────────────────────
 
 # Keywords that signal a person-name query
@@ -195,7 +233,7 @@ _STOP_WORDS = {
 }
 
 
-def extract_name_from_query(query: str) -> str | None:
+def extract_name_from_query(query: str) -> Optional[str]:
     """
     Try to extract a person name being searched in the query.
     Returns the candidate name string or None if no name query detected.
@@ -222,7 +260,7 @@ def extract_name_from_query(query: str) -> str | None:
     return None
 
 
-def name_exists_in_db(candidate: str) -> tuple[bool, str | None]:
+def name_exists_in_db(candidate: str) -> Tuple[bool, Optional[str]]:
     """
     Check if the candidate name exists in the database.
     Returns (found: bool, matched_name: str | None).
@@ -396,43 +434,56 @@ def ask():
             "sources": []
         })
 
-    # ── Name validation gate ──────────────────────────────────────────────────
-    candidate_name = extract_name_from_query(query)
-    print(f"[INFO] query={query!r}  candidate_name={candidate_name!r}")
-
-    if candidate_name:
-        found, matched_name = name_exists_in_db(candidate_name)
-        print(f"[INFO] name_exists_in_db({candidate_name!r}) -> found={found}, matched={matched_name!r}")
-
-        if not found:
-            # Name is not in the database — return immediately, no LLM call
+    # ── FIR / Case number gate (highest priority) ─────────────────────────────
+    fir_numbers, case_numbers = extract_ids_from_query(query)
+    if fir_numbers or case_numbers:
+        context_docs = retrieve_by_id(fir_numbers, case_numbers)
+        print(f"[INFO] ID lookup firs={fir_numbers} cases={case_numbers} -> {len(context_docs)} docs")
+        if not context_docs:
+            ids = ', '.join(fir_numbers + case_numbers)
             return jsonify({
                 "success": True,
                 "response": (
-                    f"No records found for **\"{candidate_name}\"** in the InvestiQ database.\n\n"
-                    f"The name **\"{candidate_name}\"** does not match any criminal, accused person, "
-                    f"or officer in our current dataset.\n\n"
-                    f"Please verify the spelling or try searching by:\n"
-                    f"• FIR Number (e.g. TNFIR20260001)\n"
-                    f"• Case Number (e.g. CASE001)\n"
-                    f"• District or Crime Type"
+                    f"No records found for **{ids}** in the InvestiQ database.\n\n"
+                    f"Please verify the number and try again."
                 ),
                 "confidence": 100.0,
                 "sources": []
             })
 
-        # Name found — retrieve only documents that exactly match this name
-        context_docs = retrieve_by_name(matched_name)
-        if not context_docs:
-            # Fallback to semantic search scoped to the matched name
-            context_docs = retrieve_context(matched_name, top_k=5)
-
-        print(f"[INFO] Retrieved {len(context_docs)} docs for name={matched_name!r}")
-
+    # ── Name validation gate ──────────────────────────────────────────────────
     else:
-        # Not a name query — use normal semantic retrieval
-        context_docs = retrieve_context(query, top_k=5)
-        print(f"[INFO] Semantic retrieval: {len(context_docs)} docs")
+        candidate_name = extract_name_from_query(query)
+        print(f"[INFO] query={query!r}  candidate_name={candidate_name!r}")
+
+        if candidate_name:
+            found, matched_name = name_exists_in_db(candidate_name)
+            print(f"[INFO] name_exists_in_db({candidate_name!r}) -> found={found}, matched={matched_name!r}")
+
+            if not found:
+                return jsonify({
+                    "success": True,
+                    "response": (
+                        f"No records found for **\"{candidate_name}\"** in the InvestiQ database.\n\n"
+                        f"The name **\"{candidate_name}\"** does not match any criminal, accused person, "
+                        f"or officer in our current dataset.\n\n"
+                        f"Please verify the spelling or try searching by:\n"
+                        f"• FIR Number (e.g. TNFIR20260001)\n"
+                        f"• Case Number (e.g. CASE001)\n"
+                        f"• District or Crime Type"
+                    ),
+                    "confidence": 100.0,
+                    "sources": []
+                })
+
+            context_docs = retrieve_by_name(matched_name)
+            if not context_docs:
+                context_docs = retrieve_context(matched_name, top_k=5)
+            print(f"[INFO] Retrieved {len(context_docs)} docs for name={matched_name!r}")
+
+        else:
+            context_docs = retrieve_context(query, top_k=5)
+            print(f"[INFO] Semantic retrieval: {len(context_docs)} docs")
 
     try:
         prompt = build_prompt(query, context_docs)
@@ -491,6 +542,193 @@ def ask():
         print(f"[ERROR] /ask failed:")
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/search", methods=["POST"])
+def semantic_search():
+    try:
+        data = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "Invalid JSON"}), 400
+
+    query = (data.get("query") or "").strip()
+    top_k = int(data.get("top_k", 10))
+    if not query:
+        return jsonify({"success": False, "error": "Query required"}), 400
+
+    results = retrieve_context(query, top_k=top_k)
+    return jsonify({
+        "success": True,
+        "results": [{
+            "content": r["content"][:300],
+            "metadata": r["metadata"],
+            "score": r["score"]
+        } for r in results]
+    })
+
+
+@app.route("/summarize", methods=["POST"])
+def summarize():
+    try:
+        data = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "Invalid JSON"}), 400
+
+    text = (data.get("text") or "").strip()
+    if not text:
+        return jsonify({"success": False, "error": "Text required"}), 400
+    if not GROQ_API_KEY:
+        return jsonify({"success": False, "error": "GROQ_API_KEY not set"}), 500
+
+    try:
+        prompt = f"""You are a police document analyst. Summarize the following document and extract:
+- Summary (2-3 sentences)
+- Victim
+- Accused
+- IPC Sections
+- Crime Type
+- Investigation Status
+
+Document:
+{text[:3000]}
+
+Respond in structured format."""
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=512,
+            temperature=0.1
+        )
+        return jsonify({"success": True, "summary": response.choices[0].message.content})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        data = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "Invalid JSON"}), 400
+
+    if not GROQ_API_KEY:
+        return jsonify({"success": False, "error": "GROQ_API_KEY not set"}), 500
+
+    district = data.get("district", "all districts")
+    context_docs = retrieve_context(f"crime patterns hotspots repeat offenders {district}", top_k=8)
+    context = "\n\n".join([d["content"][:200] for d in context_docs]) or "No data available."
+
+    try:
+        prompt = f"""You are a crime analytics AI. Based on the following crime data, provide predictive insights:
+- Top 3 crime hotspots likely to increase
+- Repeat offender probability patterns
+- High-risk crime categories
+- Recommended patrol focus areas
+
+Include confidence scores (0-100%) for each prediction.
+
+Data:
+{context}
+
+District focus: {district}"""
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=600,
+            temperature=0.2
+        )
+        return jsonify({"success": True, "predictions": response.choices[0].message.content})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/profile", methods=["POST"])
+def behavioral_profile():
+    try:
+        data = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "Invalid JSON"}), 400
+
+    criminal_id = (data.get("criminal_id") or "").strip()
+    name = (data.get("name") or "").strip()
+    if not criminal_id and not name:
+        return jsonify({"success": False, "error": "criminal_id or name required"}), 400
+    if not GROQ_API_KEY:
+        return jsonify({"success": False, "error": "GROQ_API_KEY not set"}), 500
+
+    query = criminal_id or name
+    context_docs = retrieve_context(query, top_k=6)
+    if name:
+        name_docs = retrieve_by_name(name)
+        context_docs = name_docs + context_docs
+    context = "\n\n".join([d["content"][:300] for d in context_docs[:6]]) or "No records found."
+
+    try:
+        prompt = f"""You are a criminal behavioral analyst. Based on the following records, generate a behavioral profile:
+- Crime History Summary
+- Preferred Crime Type
+- Operating Locations
+- Active Time Periods
+- Risk Level Assessment
+- Repeat Offence Pattern
+- Recommended Action
+
+Records:
+{context}
+
+Subject: {query}"""
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=600,
+            temperature=0.1
+        )
+        return jsonify({"success": True, "profile": response.choices[0].message.content})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/network", methods=["POST"])
+def criminal_network():
+    try:
+        data = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "Invalid JSON"}), 400
+
+    query = (data.get("query") or "criminal network gang associates").strip()
+    context_docs = retrieve_context(query, top_k=10)
+
+    nodes = []
+    edges = []
+    seen_nodes = set()
+
+    for doc in context_docs:
+        meta = doc["metadata"]
+        criminal = meta.get("criminal") or meta.get("accused", "")
+        fir = meta.get("fir_number", "")
+        officer = meta.get("officer", "")
+        gang = meta.get("gang", "")
+
+        if criminal and criminal not in seen_nodes:
+            nodes.append({"id": criminal, "type": "criminal", "label": criminal})
+            seen_nodes.add(criminal)
+        if fir and fir not in seen_nodes:
+            nodes.append({"id": fir, "type": "fir", "label": fir})
+            seen_nodes.add(fir)
+            if criminal:
+                edges.append({"source": criminal, "target": fir, "label": "involved in"})
+        if officer and officer not in seen_nodes:
+            nodes.append({"id": officer, "type": "officer", "label": officer})
+            seen_nodes.add(officer)
+            if fir:
+                edges.append({"source": officer, "target": fir, "label": "investigating"})
+        if gang and gang not in seen_nodes:
+            nodes.append({"id": gang, "type": "gang", "label": gang})
+            seen_nodes.add(gang)
+            if criminal:
+                edges.append({"source": criminal, "target": gang, "label": "member of"})
+
+    return jsonify({"success": True, "nodes": nodes[:30], "edges": edges[:40]})
 
 
 @app.route("/health", methods=["GET"])

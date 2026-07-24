@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Search, Filter, SlidersHorizontal } from 'lucide-react'
 import ResultCard from '../components/ResultCard'
 import Loader from '../components/Loader'
-import { firs } from '../utils/mockData'
+import { searchService } from '../services/api'
 
 const filters = ['All', 'FIR', 'Criminal', 'Vehicle', 'IPC', 'District']
 
@@ -13,21 +13,34 @@ export default function SmartSearch() {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [source, setSource] = useState('')
 
   const handleSearch = async (e) => {
-    e.preventDefault()
+    e?.preventDefault()
     if (!query.trim()) return
     setLoading(true)
     setSearched(true)
-    await new Promise(r => setTimeout(r, 800))
-    const filtered = firs.filter(f =>
-      f.title.toLowerCase().includes(query.toLowerCase()) ||
-      f.accused.toLowerCase().includes(query.toLowerCase()) ||
-      f.ipcSections.toLowerCase().includes(query.toLowerCase()) ||
-      f.district.toLowerCase().includes(query.toLowerCase())
-    ).slice(0, 12)
-    setResults(filtered.length ? filtered : firs.slice(0, 8))
-    setLoading(false)
+    try {
+      const res = await searchService.semanticSearch(query, 12)
+      const data = res.data
+      // Normalize results from AI or DB fallback
+      const raw = data.results || []
+      const normalized = raw.map((r, i) => ({
+        id: r.metadata?.fir_number || r.id || `result-${i}`,
+        title: r.metadata?.crime_type || r.crime_type || 'Unknown Crime',
+        status: r.metadata?.status || r.status || 'Unknown',
+        accused: r.metadata?.criminal || r.metadata?.accused || r.accused || '—',
+        district: r.metadata?.district || r.district || '—',
+        filedDate: r.metadata?.date || r.date || '—',
+        ipcSections: r.metadata?.ipc_sections || '—',
+        aiSummary: r.content || r.description || '',
+        matchScore: r.score ? Math.round(Math.max(0, 100 - r.score * 10)) : 80,
+      }))
+      setResults(normalized)
+      setSource(data.source || 'semantic')
+    } catch {
+      setResults([])
+    } finally { setLoading(false) }
   }
 
   return (
@@ -80,6 +93,7 @@ export default function SmartSearch() {
             <p className="text-sm text-gray-400">
               Found <span className="text-white font-semibold">{results.length}</span> results
               {query && <> for "<span className="text-primary">{query}</span>"</>}
+              {source && <span className="ml-2 text-xs text-gray-600">({source} search)</span>}
             </p>
             <span className="text-xs text-gray-600">Sorted by semantic relevance</span>
           </div>

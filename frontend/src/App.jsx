@@ -12,6 +12,33 @@ import Features from './pages/Features'
 import CriminalProfile from './pages/CriminalProfile'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import FIRManagement from './pages/FIRManagement'
+import PersonManagement from './pages/PersonManagement'
+import CriminalRecords from './pages/CriminalRecords'
+import WantedCriminals from './pages/WantedCriminals'
+import CaseManagement from './pages/CaseManagement'
+import Charges from './pages/Charges'
+import Arrests from './pages/Arrests'
+import Convictions from './pages/Convictions'
+import Evidence from './pages/Evidence'
+import Officers from './pages/Officers'
+import Users from './pages/Users'
+import Reports from './pages/Reports'
+import Settings from './pages/Settings'
+import Admin from './pages/Admin'
+import Heatmap from './pages/Heatmap'
+import CriminalNetwork from './pages/CriminalNetwork'
+import PredictiveAnalytics from './pages/PredictiveAnalytics'
+import BehavioralProfiling from './pages/BehavioralProfiling'
+import AIReports from './pages/AIReports'
+import Complainants from './pages/Complainants'
+import Victims from './pages/Victims'
+import Accused from './pages/Accused'
+import Chargesheets from './pages/Chargesheets'
+import PoliceUnits from './pages/PoliceUnits'
+import Courts from './pages/Courts'
+import MasterData from './pages/MasterData'
+import FIRDetails from './pages/FIRDetails'
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
@@ -53,15 +80,35 @@ export default function App() {
               <Route path="/assistant" element={<PageWrapper><Assistant /></PageWrapper>} />
               <Route path="/search" element={<PageWrapper><SmartSearch /></PageWrapper>} />
               <Route path="/analytics" element={<PageWrapper><Analytics /></PageWrapper>} />
+              <Route path="/heatmap" element={<PageWrapper><Heatmap /></PageWrapper>} />
+              <Route path="/network" element={<PageWrapper><CriminalNetwork /></PageWrapper>} />
+              <Route path="/predict" element={<PageWrapper><PredictiveAnalytics /></PageWrapper>} />
+              <Route path="/behavioral" element={<PageWrapper><BehavioralProfiling /></PageWrapper>} />
+              <Route path="/ai-reports" element={<PageWrapper><AIReports /></PageWrapper>} />
+              <Route path="/fir" element={<PageWrapper><FIRManagement /></PageWrapper>} />
+              <Route path="/persons" element={<PageWrapper><PersonManagement /></PageWrapper>} />
+              <Route path="/criminals" element={<PageWrapper><CriminalRecords /></PageWrapper>} />
               <Route path="/profile/:id" element={<PageWrapper><CriminalProfile /></PageWrapper>} />
-              <Route path="/criminals" element={<PageWrapper><CriminalProfile /></PageWrapper>} />
-              <Route path="/fir" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/investigations" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/evidence" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/court" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/heatmap" element={<PageWrapper><Analytics /></PageWrapper>} />
-              <Route path="/reports" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/settings" element={<PageWrapper><Dashboard /></PageWrapper>} />
+              <Route path="/wanted" element={<PageWrapper><WantedCriminals /></PageWrapper>} />
+              <Route path="/cases" element={<PageWrapper><CaseManagement /></PageWrapper>} />
+              <Route path="/charges" element={<PageWrapper><Charges /></PageWrapper>} />
+              <Route path="/arrests" element={<PageWrapper><Arrests /></PageWrapper>} />
+              <Route path="/convictions" element={<PageWrapper><Convictions /></PageWrapper>} />
+              <Route path="/evidence" element={<PageWrapper><Evidence /></PageWrapper>} />
+              <Route path="/officers" element={<PageWrapper><Officers /></PageWrapper>} />
+              <Route path="/users" element={<PageWrapper><Users /></PageWrapper>} />
+              <Route path="/reports" element={<PageWrapper><Reports /></PageWrapper>} />
+              <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+              <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
+              {/* New routes */}
+              <Route path="/complainants" element={<PageWrapper><Complainants /></PageWrapper>} />
+              <Route path="/victims" element={<PageWrapper><Victims /></PageWrapper>} />
+              <Route path="/accused" element={<PageWrapper><Accused /></PageWrapper>} />
+              <Route path="/chargesheets" element={<PageWrapper><Chargesheets /></PageWrapper>} />
+              <Route path="/police-units" element={<PageWrapper><PoliceUnits /></PageWrapper>} />
+              <Route path="/courts" element={<PageWrapper><Courts /></PageWrapper>} />
+              <Route path="/master-data" element={<PageWrapper><MasterData /></PageWrapper>} />
+              <Route path="/fir/:id/detail" element={<PageWrapper><FIRDetails /></PageWrapper>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
